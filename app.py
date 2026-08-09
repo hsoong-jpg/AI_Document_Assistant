@@ -8,26 +8,81 @@ from langchain_classic.memory import ConversationBufferMemory
 from langchain_classic.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
 from httmlTemplates import css, bot_template, user_template
+from langchain_core.prompts import PromptTemplate
 
+prompt_template = """
+You are an internal AI assistant for authorized repair technicians.
+
+Your job is to help technicians perform device repairs using the provided
+company documentation.
+
+Rules:
+- Answer as a technician-facing repair assistant.
+- Only use the provided documents.
+- Give clear, practical, step-by-step repair instructions when the documents
+  contain them.
+- Do not give consumer-oriented advice such as "contact Apple" or "take it
+  to a repair shop" unless the documentation specifically says to do so.
+- Do not invent repair procedures, tools, parts, measurements, or specifications.
+- If the documentation does not contain enough information to answer,
+  say that the available documentation does not provide the required procedure.
+- Include relevant safety warnings when they are documented.
+- Keep answers concise and technical.
+- Do not make insurance, fraud, or coverage decisions.
+- When relevant, identify the document information used to answer.
+- Use ONLY the provided context. If the answer isn't in the context, say you don't have enough information.
+
+Context:
+{context}
+
+Question:
+{question}
+
+Technician-focused answer:
+"""
+
+QA_PROMPT = PromptTemplate(
+    template=prompt_template,
+    input_variables=["context", "question"]
+)
 
 # Loops through each pdf in pdf_docs and loops through all pages and extracts text from page and appends it to text var
 def get_pdf_text(pdf_docs):
-    text = ""
+    documents = []
+
     for pdf in pdf_docs:
         pdf_reader = PdfReader(pdf)
-        for page in pdf_reader.pages:
-            text+= page.extract_text()
-    return text
+
+        for page_number, page in enumerate(pdf_reader.pages, start =1):
+            text = page.extract_text()
+
+            if text:
+                documents.append({
+                    "text": text,
+                    "source": pdf.name,
+                    "page": page_number
+                })
+    return documents
 
 
-def get_text_chunks(text):
+def get_text_chunks(documents):
     text_splitter = CharacterTextSplitter(
         separator="\n",
         chunk_size = 1000, 
         chunk_overlap = 200,
         length_function =len
     )
-    chunks = text_splitter.split_text(text)
+    chunks = []
+
+    for document in documents:
+        page_chunks = text_splitter.split_text(document["text"])
+
+        for chunk in page_chunks:
+            chunks.append({
+                "text": chunk,
+                "source": document["source"],
+                "page": document["page"]
+            })
     return chunks
 
 def get_embeddings():
@@ -39,19 +94,41 @@ def get_embeddings():
 
 def  get_vectorstore(text_chunks):
     embeddings = get_embeddings()
-    vectorstore = FAISS.from_texts(texts=text_chunks, embedding = embeddings)
+    texts = [chunk["text"] for chunk in text_chunks]
+
+    metadatas = [
+        {
+            "source": chunk["source"],
+            "page": chunk["page"]
+        }
+
+        for chunk in text_chunks
+    ]
+
+    vectorstore = FAISS.from_texts(
+        texts=texts,
+        embedding = embeddings,
+        metadatas=metadatas
+    )
     return vectorstore
+
 
 def get_conversation_chain(vectorstore):
     llm = ChatOpenAI(
     model="gpt-5.6-luna",
     temperature=0
 )
-    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer')
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm =llm,
         retriever=vectorstore.as_retriever(),
-        memory = memory
+        memory = memory,
+        return_source_documents=True,
+        combine_docs_chain_kwargs={
+        "prompt": QA_PROMPT
+    }
+    
+
     )
     return conversation_chain
 
@@ -65,6 +142,14 @@ def handle_userinput(user_question):
 
         else:
             st.write(bot_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
+
+    st.subheader("Sources")
+
+    for doc in response["source_documents"]:
+        source = doc.metadata.get("source", "Unknown")
+        page = doc.metadata.get("page", "Unknown")
+
+        st.write(f"📄 {source} — Page {page}")
 
 def main():
     load_dotenv()
@@ -112,7 +197,7 @@ def main():
                 # Get PDF text
                 raw_text = get_pdf_text(pdf_docs)
 
-                if not raw_text.strip():
+                if not raw_text:
                     st.error("No text could be extracted from the PDF.")
                     return
 
@@ -129,6 +214,8 @@ def main():
 
             # create conversation chain
             st.session_state.conversation = get_conversation_chain(vectorstore)
+
+ 
             
 
 if __name__ == '__main__':
