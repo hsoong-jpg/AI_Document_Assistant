@@ -6,7 +6,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_classic.memory import ConversationBufferMemory
 from langchain_classic.chains import ConversationalRetrievalChain
-from langchain_classic.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
+from httmlTemplates import css, bot_template, user_template
 
 
 # Loops through each pdf in pdf_docs and loops through all pages and extracts text from page and appends it to text var
@@ -42,7 +43,10 @@ def  get_vectorstore(text_chunks):
     return vectorstore
 
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI()
+    llm = ChatOpenAI(
+    model="gpt-5.6-luna",
+    temperature=0
+)
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm =llm,
@@ -51,7 +55,16 @@ def get_conversation_chain(vectorstore):
     )
     return conversation_chain
 
+def handle_userinput(user_question):
+    response = st.session_state.conversation.invoke({"question": user_question}) 
+    st.session_state.chat_history = response['chat_history']
 
+    for i, message in enumerate(st.session_state.chat_history):
+        if i % 2 == 0:
+            st.write(user_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
+
+        else:
+            st.write(bot_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
 
 def main():
     load_dotenv()
@@ -60,10 +73,24 @@ def main():
         page_title="AI Document Assistant",
         page_icon="🧑‍🔧"
     )
+    st.write(css,unsafe_allow_html=True)
+
+    if "conversation" not in st.session_state:
+        st.session_state.conversation = None
+
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = None
 
     st.header("AI Document Assistant 🧑‍🔧")
 
-    st.text_input("What can I help you with?")
+    user_question =st.text_input("What can I help you with?")
+    if user_question:
+        if st.session_state.conversation is not None:
+            handle_userinput(user_question)
+        else:
+            st.warning("Please upload and process at least one document first")
+
+
 
     with st.sidebar:
         st.subheader("Your documents")
@@ -101,7 +128,8 @@ def main():
             st.success("Documents processed successfully!")
 
             # create conversation chain
-            conversation = get_conversation_chain(vectorstore)
+            st.session_state.conversation = get_conversation_chain(vectorstore)
+            
 
 if __name__ == '__main__':
     main()
