@@ -192,7 +192,7 @@ def main():
                 st.warning("Please upload a PDF first.")
                 return
 
-            with st.spinner("Processing..."):
+            with st.spinner("🔧 Processing technician documents..."):
 
                 # Get PDF text
                 raw_text = get_pdf_text(pdf_docs)

@@ -1,90 +1,55 @@
 css = '''
 <style>
-
 .chat-message {
-    padding: 15px;
-    border-radius: 14px;
-    margin-bottom: 12px;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
     display: flex;
-    align-items: flex-start;
+}
+
+.chat-message.user {
+    background-color: #2b313e;
+}
+
+.chat-message.bot {
+    background-color: #475063;
 }
 
 .chat-message .avatar {
-    width: 45px;
-    height: 45px;
-    min-width: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 25px;
-    margin-right: 12px;
-    background-color: white;
+    font-size: 30px;
+    background-color: #f0f0f0;
 }
 
 .chat-message .message {
-    flex: 1;
-    padding: 5px 10px;
-    line-height: 1.5;
+    width: 80%;
+    padding: 0 1.5rem;
+    color: #fff;
 }
-
-
-/* USER */
-
-.chat-message.user {
-    background-color: #6FB3F2 !important;
-}
-
-.chat-message.user .message {
-    color: #000000 !important;
-}
-
-
-/* BOT */
-
-.chat-message.bot {
-    background-color: #081978 !important;
-}
-
-.chat-message.bot .message {
-    color: #FFFFFF !important;
-}
-
 </style>
 '''
 
 
 bot_template = '''
-<div class="chat-message bot"
-     style="background-color: #081978; color: white;">
-
+<div class="chat-message bot">
     <div class="avatar">
         🤖
     </div>
-
-    <div class="message"
-         style="color: white;">
-
-        {{MSG}}
-
-    </div>
+    <div class="message">{{MSG}}</div>
 </div>
 '''
 
 
 user_template = '''
-<div class="chat-message user"
-     style="background-color: #6FB3F2; color: black;">
-
+<div class="chat-message user">
     <div class="avatar">
         🧑‍🔧
     </div>
-
-    <div class="message"
-         style="color: black;">
-
-        {{MSG}}
-
-    </div>
+    <div class="message">{{MSG}}</div>
 </div>
 '''
