@@ -138,10 +138,10 @@ def handle_userinput(user_question):
 
     for i, message in enumerate(st.session_state.chat_history):
         if i % 2 == 0:
-            st.write(user_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
+            st.markdown(user_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
 
         else:
-            st.write(bot_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
+            st.markdown(bot_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
 
     st.subheader("Sources")
 
@@ -168,7 +168,7 @@ def main():
 
     st.header("AI Document Assistant 🧑‍🔧")
 
-    user_question =st.text_input("What can I help you with?")
+    user_question =st.chat_input("What can I help you with?")
     if user_question:
         if st.session_state.conversation is not None:
             handle_userinput(user_question)
