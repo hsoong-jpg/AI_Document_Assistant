@@ -1,5 +1,4 @@
 import streamlit as st
-from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -28,6 +27,7 @@ Rules:
   say that the available documentation does not provide the required procedure.
 - Include relevant safety warnings when they are documented.
 - Keep answers concise and technical.
+- Do not make insurance, fraud, or coverage decisions.
 - When relevant, identify the document information used to answer.
 - Use ONLY the provided context. If the answer isn't in the context, say you don't have enough information.
 
@@ -151,7 +151,6 @@ def handle_userinput(user_question):
         st.write(f"📄 {source} — Page {page}")
 
 def main():
-    load_dotenv()
 
     st.set_page_config(
         page_title="AI Document Assistant",
