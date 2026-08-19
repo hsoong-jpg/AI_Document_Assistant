@@ -1,4 +1,3 @@
-# AI_Document_Assistant
 
 # AI Document Assistant
 
