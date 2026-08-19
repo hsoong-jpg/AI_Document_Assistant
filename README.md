@@ -1,78 +1,110 @@
+# 🧑‍🔧 AI Document Assistant
 
-# AI Document Assistant
+An AI-powered document assistant built with **Streamlit, Python, LangChain, FAISS, Hugging Face embeddings, and OpenAI**. The application allows authorized repair technicians to upload PDF documentation and ask questions about repair procedures, safety information, and technical specifications.
 
-An AI-powered document assistant that allows users to upload documents and ask questions about their contents. The application uses retrieval-augmented generation (RAG) to find relevant information from uploaded documents and provide concise, context-based answers.
+The assistant uses **retrieval-augmented generation (RAG)** to retrieve relevant sections of uploaded documents and provide answers grounded in the available documentation.
 
-## Features
+## ✨ Features
 
-* 📄 Upload and process documents
-* 🔎 Search documents using semantic similarity
-* 🤖 Ask questions about document contents using OpenAI
-* 📚 Retrieval-augmented generation (RAG)
-* 💬 Interactive chat interface built with Streamlit
-* 🔗 Provide relevant document context to support responses
-* 🛡️ Designed to reduce hallucinations by grounding responses in uploaded documents
+* 📄 Upload multiple PDF documents
+* 🔎 Extract and split document text into searchable chunks
+* 🧠 Generate semantic embeddings using Hugging Face
+* 🗂️ Store document embeddings using FAISS
+* 💬 Ask questions through an interactive Streamlit chat interface
+* 🤖 Generate technician-focused responses using OpenAI
+* 📚 Display the source document and page number used for each answer
+* 🛡️ Prompt the AI to only use information contained in the uploaded documentation
+* 🔧 Provide concise, step-by-step repair guidance when available
 
-## How It Works
+## 🏗️ How It Works
 
-The application follows a RAG-based workflow:
+The application follows a retrieval-augmented generation workflow:
 
 ```text
-Upload Document
+PDF Documents
       ↓
-Extract Document Text
+Extract Text with PyPDF2
       ↓
 Split Text into Chunks
       ↓
-Create Embeddings
+Generate Hugging Face Embeddings
       ↓
-Store/Search Embeddings
+Store Embeddings in FAISS
       ↓
-User Asks Question
+User Asks a Question
       ↓
-Retrieve Relevant Document Sections
+Retrieve Relevant Document Chunks
       ↓
-Send Relevant Context to OpenAI
+Send Retrieved Context to OpenAI
       ↓
-Generate Answer
+Generate Technician-Focused Answer
+      ↓
+Display Answer + Sources
 ```
 
-Instead of sending an entire document to the language model for every question, the application retrieves the most relevant sections and uses those sections as context when generating the response.
+This approach allows the assistant to search the uploaded documentation and provide responses based on the most relevant sections rather than relying solely on the model's general knowledge.
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 ### Frontend
 
-* Streamlit
-
-### Backend
-
-* Python
-* LangChain
-
-### AI
-
-* OpenAI API
-* Hugging Face / Sentence Transformers embeddings
+* **Streamlit** — web application and chat interface
+* **HTML/CSS** — custom chat message styling
 
 ### Document Processing
 
-* PDF/text document processing
-* Text chunking
-* Semantic search
+* **PyPDF2** — PDF text extraction
+* **LangChain Text Splitters** — document chunking
 
-## Project Structure
+### Retrieval
+
+* **Hugging Face Sentence Transformers**
+
+  * `sentence-transformers/all-MiniLM-L6-v2`
+* **FAISS** — vector similarity search
+
+### AI
+
+* **LangChain**
+* **OpenAI**
+* **Conversational Retrieval Chain**
+* **Conversation Buffer Memory**
+
+## 📁 Project Structure
 
 ```text
 AI_Document_Assistant/
 │
-├── app.py                  # Main Streamlit application
-├── requirements.txt        # Python dependencies
-├── .gitignore              # Files excluded from Git
-└── README.md               # Project documentation
+├── app.py
+├── httmlTemplates.py
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
-## Getting Started
+### `app.py`
+
+Contains the main Streamlit application, including:
+
+* PDF processing
+* Text extraction
+* Text chunking
+* Embedding generation
+* FAISS vector store creation
+* Conversational retrieval
+* OpenAI integration
+* Chat interface
+* Source display
+
+### `httmlTemplates.py`
+
+Contains the custom HTML/CSS templates used to display:
+
+* User messages
+* AI responses
+* Chat styling
+
+## 🚀 Getting Started
 
 ### 1. Clone the Repository
 
@@ -87,15 +119,13 @@ cd AI_Document_Assistant
 python3 -m venv .venv
 ```
 
-Activate the virtual environment:
-
-**macOS/Linux**
+Activate it on macOS/Linux:
 
 ```bash
 source .venv/bin/activate
 ```
 
-**Windows**
+On Windows:
 
 ```bash
 .venv\Scripts\activate
@@ -109,21 +139,17 @@ pip install -r requirements.txt
 
 ### 4. Configure the OpenAI API Key
 
-Create a Streamlit secrets file:
+For local development, configure your OpenAI API key using an environment variable or your local Streamlit secrets file.
 
-```text
-.streamlit/secrets.toml
-```
+For Streamlit deployment, use **Streamlit Secrets** rather than committing an API key to GitHub.
 
-Add:
+Example:
 
 ```toml
 OPENAI_API_KEY = "your-api-key-here"
 ```
 
-**Do not commit this file or your API key to GitHub.**
-
-Make sure `.streamlit/secrets.toml` is included in `.gitignore`.
+**Never commit API keys, passwords, or other credentials to the repository.**
 
 ### 5. Run the Application
 
@@ -133,51 +159,66 @@ streamlit run app.py
 
 The application will open in your browser.
 
-## Example Use Cases
+## 💬 Using the Assistant
 
-The assistant can be adapted for situations where users need to quickly retrieve information from large collections of documents, including:
+1. Open the application.
+2. Upload one or more PDF repair documents from the sidebar.
+3. Click **Process**.
+4. Wait for the documents to be processed and indexed.
+5. Enter a question in the chat box.
+6. The assistant retrieves relevant sections from the uploaded documents.
+7. The response is generated using the retrieved context.
+8. The source document and page number are displayed below the response.
 
-* Technical documentation
-* Repair manuals
-* Company policies
-* Product documentation
-* Knowledge bases
-* Research documents
-* Internal documentation
+## 🔐 AI Response Guidelines
 
-## Security Considerations
+The assistant is designed specifically for authorized repair technicians.
 
-Because the application uses an external AI API, sensitive information should not be uploaded without appropriate authorization.
+Its prompt instructs the model to:
 
-The application should also protect:
+* Only use the provided documentation.
+* Provide technician-facing answers.
+* Give step-by-step repair instructions when available.
+* Avoid inventing repair procedures, tools, parts, measurements, or specifications.
+* Avoid consumer-oriented recommendations unless they appear in the documentation.
+* Include documented safety warnings when relevant.
+* State when the available documentation does not contain enough information to answer a question.
+* Identify relevant source documents when possible.
 
-* OpenAI API credentials
-* Uploaded documents
-* User questions and responses
-* Vector database contents
-* Authentication credentials
+These constraints are intended to reduce unsupported or hallucinated repair instructions.
 
-API keys should be stored using environment variables or Streamlit Secrets rather than committed to source control.
+## 🔒 Security Considerations
 
-## Limitations
+This application uses an external AI API and should not be used with confidential or sensitive documents unless the appropriate authorization and security controls are in place.
 
-The assistant's responses depend on the quality and contents of the uploaded documents. If relevant information is not present in the retrieved documents, the model may be unable to provide an accurate answer.
+Important security considerations include:
 
-For production use, additional security controls such as authentication, authorization, access controls, secure document storage, monitoring, and input validation should be implemented.
+* Keep OpenAI API keys outside the source code.
+* Never commit API keys to GitHub.
+* Do not commit `.env` files or Streamlit secrets.
+* Do not upload confidential company documentation without authorization.
+* Restrict access to the deployed application when documents contain sensitive information.
+* Use authentication and authorization for production deployments.
+* Protect uploaded documents and vector stores from unauthorized access.
 
-## Future Improvements
+For a public demonstration, use sample or non-confidential documents.
 
-* 🔐 User authentication and authorization
-* 📁 Support for additional document formats
-* 🗂️ Persistent vector database
-* 📊 Document management dashboard
-* 🔍 Improved retrieval and ranking
-* 💾 Conversation history
-* 📈 Usage and performance monitoring
-* 🛡️ Prompt-injection and data-leakage protections
-* 👥 Role-based access control
+## ⚠️ Limitations
 
-## Author
+The assistant's responses depend on the information contained in the uploaded documents.
+
+If the relevant repair procedure or technical information is not present in the retrieved document context, the assistant is instructed to indicate that the available documentation is insufficient.
+
+Additional limitations include:
+
+* PDF text extraction may not work correctly with scanned/image-only PDFs.
+* Retrieval quality depends on document chunking and embedding quality.
+* The current vector store is created when documents are processed and is not intended as a persistent production database.
+* Conversation memory exists within the current Streamlit session.
+* Production use would require additional security, authentication, monitoring, and data-management controls.
+
+
+## 👩‍💻 Author
 
 **Hannah Soong**
 
