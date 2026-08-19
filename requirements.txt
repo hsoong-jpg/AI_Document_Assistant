@@ -1,0 +1,9 @@
+streamlit
+PyPDF2
+langchain-text-splitters
+langchain-huggingface
+langchain-community
+langchain-classic
+langchain-openai
+sentence-transformers
+faiss-cpu
