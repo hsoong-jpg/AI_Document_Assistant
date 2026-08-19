@@ -28,7 +28,6 @@ Rules:
   say that the available documentation does not provide the required procedure.
 - Include relevant safety warnings when they are documented.
 - Keep answers concise and technical.
-- Do not make insurance, fraud, or coverage decisions.
 - When relevant, identify the document information used to answer.
 - Use ONLY the provided context. If the answer isn't in the context, say you don't have enough information.
 
