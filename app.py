@@ -115,7 +115,8 @@ def  get_vectorstore(text_chunks):
 def get_conversation_chain(vectorstore):
     llm = ChatOpenAI(
     model="gpt-5.6-luna",
-    temperature=0
+    temperature=0,
+    api_key=st.secrets["OPENAI_API_KEY"]
 )
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True, output_key='answer')
     conversation_chain = ConversationalRetrievalChain.from_llm(
